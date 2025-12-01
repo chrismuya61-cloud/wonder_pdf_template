@@ -590,6 +590,12 @@ if (!function_exists('get_table_gamma_items_and_taxes')) {
 				 * eq Rate * QTY + TAXES APPLIED
 				 */
 
+				hooks()->add_action('after_pdf_init', 'wonder_pdf_load_libraries');
+function wonder_pdf_load_libraries($pdf_instance) {
+    $CI = &get_instance();
+    $CI->load->library('wonder_pdf_template/gamma_app_items_table', ['pdf' => $pdf_instance]);
+}
+
 				$hook_data = hooks()->apply_filters('final_item_amount', array(
 					'amount' => ($item['qty'] * $item['rate']),
 					'item_taxes' => $item_taxes,
