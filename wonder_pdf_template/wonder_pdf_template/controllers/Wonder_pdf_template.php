@@ -1,18 +1,31 @@
-<?php
-defined('BASEPATH') or exit('No direct script access allowed');
+<?php defined('BASEPATH') or exit('No direct script access allowed');
 
 class Wonder_pdf_template extends AdminController {
-	public function index() {
-		show_404();
-		/*$destination_path = APPPATH . 'vendor/tecnickcom/tcpdf/fonts/';
-			$source_path = module_dir_path(WPDF_TEMPLATE, 'assets/files/');
-			$files_arr = array_values(array_diff(scandir($source_path), array('..', '.')));
-			$files_arr = json_decode(json_encode($files_arr));
-			foreach ($files_arr as $key => $file) {
-				if (!file_exists($destination_path . $file)) {
-					copy($source_path . $file, $destination_path . $file);
-				}
-		*/
-	}
+    
+    public function __construct(){
+        parent::__construct();
+        $this->load->helper('wonder_pdf_template');
+    }
 
+    public function settings() {
+        if($this->input->post()){
+            if(!empty($_FILES['sec_logo']['name'])){
+                $config['upload_path'] = FCPATH . 'modules/wonder_pdf_template/assets/images/';
+                $config['allowed_types'] = 'jpg|png|jpeg';
+                $config['overwrite'] = true;
+                $config['file_name'] = 'sec_logo';
+                
+                $this->load->library('upload', $config);
+                
+                if($this->upload->do_upload('sec_logo')) {
+                    $data = $this->upload->data();
+                    update_option('wonder_pdf_sec_logo', $data['file_name']);
+                }
+            }
+            set_alert('success', 'Settings Saved');
+            redirect(admin_url('wonder_pdf_template/settings'));
+        }
+        
+        $this->load->view('wonder_pdf_template/manage_settings', ['title'=>'PDF Settings']);
+    }
 }
