@@ -2,6 +2,9 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+// FIX: Initialize standard variables to prevent errors
+$CI = &get_instance();
+$font_size = get_option('pdf_font_size');
 $dimensions = $pdf->getPageDimensions();
 
 $info_right_column = '<div style="color:#424242; font-size: 14px;">' . format_organization_info() . '</div>';
@@ -21,7 +24,6 @@ $estimate_heading = ucfirst(strtolower(_l('estimate_pdf_heading')));
 $title = '<span style="font-weight:600; font-size: 38pt;  text-align:right">' . $estimate_heading . '</span><br />';
 $brands = '<img src="' . module_dir_path(WPDF_TEMPLATE, 'assets/images/brands.png') . '"/>';
 
-//$pdf->writeHTML($title, true, false, false, false, '');
 pdf_multi_row($brands, $title, $pdf, ($dimensions['wk'] / 2.5) - $dimensions['lm']);
 $pdf->ln(1);
 
@@ -53,7 +55,6 @@ $customer_info .= format_customer_info($estimate, 'estimate', 'billing');
 $customer_info .= '</div>';
 
 $info_right_column = $estimate_info;
-
 $info_left_column = $customer_info;
 
 pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);

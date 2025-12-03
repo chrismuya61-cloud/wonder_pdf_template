@@ -2,6 +2,9 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+// FIX: Initialize standard variables
+$CI = &get_instance();
+$font_size = get_option('pdf_font_size');
 $dimensions = $pdf->getPageDimensions();
 
 $info_right_column = '<div style="color:#424242; font-size: 14px;">' . format_organization_info() . '</div>';
@@ -24,7 +27,6 @@ if (!empty($credit_note->datecs_esd_response)) {
 $title = '<span style="font-weight:600; font-size: 38pt;  text-align:right">' . $credit_note_heading . '</span><br />';
 $brands = '<img src="' .module_dir_path(WPDF_TEMPLATE, 'assets/images/brands.png').'"/>';
 
-//$pdf->writeHTML($title, true, false, false, false, '');
 pdf_multi_row($brands, $title, $pdf, ($dimensions['wk'] / 2.5) - $dimensions['lm']);
 $pdf->ln(1);
 
@@ -59,14 +61,13 @@ $customer_info .= format_customer_info($credit_note, 'credit_note', 'billing');
 $customer_info .= '</div>';
 
 $info_right_column = $credit_note_info;
-
 $info_left_column = $customer_info;
 
 pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);
 $pdf->ln(1);
 
 // The items table
-$items = wonder_get_items_table_data($credit_note, 'credit_note', 'pdf', false, 'gamma');
+$items = wonder_get_items_table_data($credit_note, 'credit_note', 'pdf', false);
 
 $tblhtml = $items->table();
 $borderTotal = 'border-bottom-color:#000000;border-bottom-width:1px; border-bottom-style:solid;';

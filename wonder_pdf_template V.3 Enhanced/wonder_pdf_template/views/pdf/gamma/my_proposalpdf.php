@@ -1,6 +1,11 @@
 <?php
 
 defined('BASEPATH') or exit('No direct script access allowed');
+
+// FIX: Initialize standard variables
+$CI = &get_instance();
+$font_size = get_option('pdf_font_size');
+$dimensions = $pdf->getPageDimensions();
 $doc_title = ucfirst(strtolower(_l('proposal')));
 
 include_once 'partials/header.php';
@@ -43,7 +48,7 @@ if (!empty($proposal->open_till)) {
 	$open_till = _l('proposal_open_till') . ': ' . _d($proposal->open_till) . '<br />';
 }
 
-$info_right_column = '<b># ' . $number . '</b>
+$info_right_column = '<b># ' . format_proposal_number($proposal->id) . '</b>
 <div  style="font-weight:400 !important; color:#424242; font-size:' . ($font_size + 4) . 'px;"><span style="color:#000;">' . $proposal->subject . '</span><br />
 ' . $proposal_date . '
 <br />

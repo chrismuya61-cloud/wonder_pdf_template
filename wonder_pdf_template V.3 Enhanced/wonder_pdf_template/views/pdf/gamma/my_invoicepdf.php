@@ -2,8 +2,12 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+// FIX: Initialize standard variables to prevent errors
+$CI = &get_instance();
+$font_size = get_option('pdf_font_size');
 $dimensions = $pdf->getPageDimensions();
 
+// --- HEADER SECTION (Gamma Style) ---
 $info_right_column = '<div style="color:#424242; font-size: 14px;">' . format_organization_info() . '</div>';
 $info_left_column = wonder_pdf_logo_url();
 
@@ -22,12 +26,13 @@ if (!empty($invoice->datecs_esd_response)) {
 }
 
 $title = '<span style="font-weight:600; font-size: 38pt;  text-align:right">' . $invoice_heading . '</span><br />';
+// Note: Ensure brands.png exists in your module assets
 $brands = '<img src="' . module_dir_path(WPDF_TEMPLATE, 'assets/images/brands.png') . '"/>';
 
-//$pdf->writeHTML($title, true, false, false, false, '');
 pdf_multi_row($brands, $title, $pdf, ($dimensions['wk'] / 2.5) - $dimensions['lm']);
 $pdf->ln(1);
 
+// --- INVOICE INFO SECTION ---
 $invoice_info = '<b style="color:#4e4e4e;"># ' . $invoice_number . '</b>';
 
 if (get_option('show_status_on_pdf_ei') == 1) {
@@ -62,13 +67,12 @@ $customer_info .= format_customer_info($invoice, 'invoice', 'billing');
 $customer_info .= '</div>';
 
 $info_right_column = $invoice_info;
-
 $info_left_column = $customer_info;
 
 pdf_multi_row($info_left_column, $info_right_column, $pdf, ($dimensions['wk'] / 2) - $dimensions['lm']);
 
-// The items table
-// The items table
+// --- ITEMS TABLE SECTION ---
+// This uses the updated helper logic we fixed
 $items = wonder_get_items_table_data($invoice, 'invoice', 'pdf', false);
 
 // Generate the services table
@@ -76,16 +80,16 @@ $tblhtml = $items->table();
 $borderTotal = 'border-bottom-color:#000000;border-bottom-width:1px; border-bottom-style:solid;';
 $tbltotal = '';
 
-// ✅ Determine the Last Service Item Number
-$lastItemNumber = count($invoice->items); // Assuming $invoice->items contains service items
+// Determine the Last Service Item Number
+$lastItemNumber = count($invoice->items);
 
-// ✅ Add Accessory Data with Continued Numbering and <hr> Below Each Item
+// Add Accessory Data with Continued Numbering and <hr> Below Each Item
 $accessoryRows = '';
 if (!empty($invoice->accessories)) {
     $currentNumber = $lastItemNumber + 1;
 
     foreach ($invoice->accessories as $accessory) {
-        $qty = 1; // Assuming each accessory has a quantity of 1
+        $qty = 1;
         $rate = $accessory->accessory_price;
         $amount = $qty * $rate;
 
@@ -98,16 +102,16 @@ if (!empty($invoice->accessories)) {
             <td align="right">0%</td>
             <td align="right">' . number_format($amount, 2) . '</td>
         </tr>
-        <tr><td colspan="12"><hr colspan="12" style="border:1px solid #000;"></td></tr>'; // ✅ HR Tag
+        <tr><td colspan="12"><hr colspan="12" style="border:1px solid #000;"></td></tr>';
 
-        $currentNumber++; // Increment for next accessory
+        $currentNumber++;
     }
 }
 
-// ✅ Insert accessories right after the service items
+// Insert accessories right after the service items
 $tblhtml = str_replace('</tbody>', $accessoryRows . '</tbody>', $tblhtml);
 
-// ✅ Totals Table
+// --- TOTALS SECTION ---
 $tbltotal .= '<table cellpadding="6" style="font-size:' . ($font_size + 4) . 'px">';
 $tbltotal .= '
 <tr>
@@ -185,9 +189,12 @@ if (get_option('show_amount_due_on_invoice') == 1 && $invoice->status != Invoice
 
 $tbltotal .= '</table>';
 $tblhtml .= $tbltotal;
+
 if (get_option('total_to_words_enabled') == 1) {
+	// FIX: Ensure $CI is defined (done at top of file)
 	$tblhtml .= '<b>' . _l('num_word') . ': ' . $CI->numberword->convert($invoice->total, $invoice->currency_name) . '</b>';
 }
+
 if (count($invoice->payments) > 0 && get_option('show_transactions_on_invoice_pdf') == 1) {
 	$border = 'border-bottom-color:#000000;border-bottom-width:1px;border-bottom-style:solid; 1px solid black;';
 	$tblhtml .= '<p></p><p></p><p></p><div><b>' . _l('invoice_received_payments') . '</b></div>';
@@ -216,6 +223,7 @@ if (count($invoice->payments) > 0 && get_option('show_transactions_on_invoice_pd
 	$tblhtml .= '</tbody>';
 	$tblhtml .= '</table>';
 }
+
 $tblhtml .= '<table style="font-size:' . ($font_size + 4) . 'px">
 <tr height="40"><td></td><td></td></tr>
 <tr><td style="width:60%;">';
